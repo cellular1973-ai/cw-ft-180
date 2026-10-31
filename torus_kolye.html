@@ -176,7 +176,7 @@ const PRESETS = {
 };
 const presetOf = (m, f) => m === "sinus" ? "sinus" : f < 10 ? "schumann" : "darbe";
 const $ = (id) => document.getElementById(id);
-let dev = null, cmdCh = null, staCh = null, demo = null, minutes = 20, pollTimer = null, mode = "sinus";
+let dev = null, cmdCh = null, staCh = null, demo = null, minutes = 20, pollTimer = null, mode = "sinus", ledTouched = 0;
 
 // ---- PWA: cevrimdisi calisma (HTTPS veya localhost gerekir)
 if ("serviceWorker" in navigator && location.protocol !== "file:") {
@@ -194,7 +194,7 @@ if (!navigator.bluetooth) {
   $("btnConnect").disabled = true;
 }
 
-// ---- durum satirini coz: "ACIK mod=darbe/25 f=100.00Hz I_set=1000mA I_olc=998mA faz=12deg Vk=120mV Vbus=1.000V Vpil=3.95V B~707uT kalan=1180s hata=yok"
+// ---- durum satirini coz: "ACIK mod=darbe/25 f=100.00Hz I_set=1000mA I_olc=998mA faz=12deg Vk=120mV Vbus=1.000V Vpil=3.95V B~707uT kalan=1180s uyku=acik led=acik hata=yok"
 function parseStatus(t) {
   const g = (re) => { const m = t.match(re); return m ? m[1] : null; };
   const m = g(/mod=(sinus|darbe)/), f = +(g(/f=([\d.]+)Hz/) || 100);
@@ -202,6 +202,7 @@ function parseStatus(t) {
     on: t.startsWith("ACIK"), mode: m ? presetOf(m, f) : mode, f, iset: +g(/I_set=(-?[\d.]+)mA/), imeas: +g(/I_olc=(-?[\d.]+)mA/),
     vk: +g(/Vk=(-?[\d.]+)mV/), vbat: +g(/Vpil=([\d.]+)V/), b: +g(/B~(-?[\d.]+)uT/),
     left: +g(/kalan=(\d+)s/), fault: (g(/hata=(.*)$/) || "yok").trim(),
+    led: { acik: true, kapali: false }[g(/led=(acik|kapali)/)],   // eski firmware: undefined
   };
 }
 
@@ -216,6 +217,8 @@ function render(s) {
   $("sDb").textContent = s.on ? `${(k.dbdt * ia).toFixed(2)} T/s` : "—";
   $("sE").textContent = s.on ? `${(k.e * ia).toFixed(1)} mV/m` : "—";
   setModeUI(s.mode);
+  // cihazdaki LED durumu; dokunuştan hemen sonra gelen eski değer anahtarı geri çevirmesin
+  if (typeof s.led === "boolean" && Date.now() - ledTouched > 3000) $("ledSw").checked = s.led;
   $("sT").textContent = s.on && s.left >= 0 ? `${Math.floor(s.left / 60)}:${String(s.left % 60).padStart(2, "0")}` : "—";
   if (isFinite(s.vbat) && s.vbat > 0) {
     const p = Math.max(0, Math.min(100, Math.round((s.vbat - 3.3) / (4.15 - 3.3) * 100)));
@@ -267,7 +270,7 @@ $("btnConnect").onclick = async () => {
 // ---- demo modu: cihaz yokken arayuzu dener
 $("btnDemo").onclick = () => {
   demo = {
-    st: { on: false, mode, f: mode === "schumann" ? 7.83 : 100, iset: +$("amp").value, imeas: 0, vk: 0, vbat: 4.05, b: 0, left: 0, fault: "yok" },
+    st: { on: false, led: $("ledSw").checked, mode, f: mode === "schumann" ? 7.83 : 100, iset: +$("amp").value, imeas: 0, vk: 0, vbat: 4.05, b: 0, left: 0, fault: "yok" },
     end: 0,
     cmd(c) {
       const s = this.st;
@@ -313,6 +316,7 @@ document.querySelectorAll(".seg button").forEach((b) => b.onclick = () => {
 try { $("ledSw").checked = localStorage.getItem("torus_led") !== "0"; } catch {}
 async function sendLed() { await send($("ledSw").checked ? "led on" : "led off"); }
 $("ledSw").onchange = () => {
+  ledTouched = Date.now();
   try { localStorage.setItem("torus_led", $("ledSw").checked ? "1" : "0"); } catch {}
   sendLed();
 };
