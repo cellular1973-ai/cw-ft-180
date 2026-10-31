@@ -48,6 +48,16 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--copper-2); 
 .label { display: flex; justify-content: space-between; font-size: 14px; color: var(--ink-2); }
 .label b { color: var(--ink); font-variant-numeric: tabular-nums; }
 input[type=range] { width: 100%; accent-color: var(--copper); height: 32px; }
+.toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 4px; cursor: pointer; }
+.toggle span { font-size: 14px; color: var(--ink-2); display: grid; }
+.toggle small { font-size: 12px; color: var(--muted); }
+.toggle input { appearance: none; width: 46px; height: 28px; border-radius: 14px; background: var(--line); position: relative;
+  cursor: pointer; flex: none; margin: 0; transition: background .15s; }
+.toggle input::after { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--card); box-shadow: 0 1px 2px rgba(0,0,0,.3); transition: transform .15s; }
+.toggle input:checked { background: var(--copper); }
+.toggle input:checked::after { transform: translateX(18px); }
+@media (prefers-reduced-motion: reduce) { .toggle input, .toggle input::after { transition: none; } }
 .chips { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 .chips button { min-height: 42px; padding: 8px 0; font-size: 15px; }
 .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
@@ -117,6 +127,10 @@ dialog ul { padding-left: 18px; margin: 8px 0 14px; font-size: 14.5px; }
       <button data-min="20" aria-pressed="true">20 dk</button>
       <button data-min="30" aria-pressed="false">30 dk</button>
     </div>
+    <label class="toggle" for="ledSw">
+      <span>Durum LED'i<small>Kolyedeki küçük ışığın çakmasını açar/kapatır</small></span>
+      <input type="checkbox" id="ledSw" role="switch" checked>
+    </label>
   </section>
 
   <section class="card" aria-label="Durum">
@@ -243,7 +257,7 @@ $("btnConnect").onclick = async () => {
     await staCh.startNotifications().catch(() => {});
     staCh.addEventListener("characteristicvaluechanged", readStatus);
     setConn(true, dev.name || "Bağlı");
-    await send(`a ${$("amp").value}`); await send(`t ${minutes}`); await sendMode();
+    await send(`a ${$("amp").value}`); await send(`t ${minutes}`); await sendMode(); await sendLed();
     clearInterval(pollTimer); pollTimer = setInterval(readStatus, 1500); readStatus();
   } catch (e) {
     if (e.name !== "NotFoundError") alert("Bağlanılamadı: " + e.message);
@@ -264,6 +278,7 @@ $("btnDemo").onclick = () => {
       else if (c.startsWith("f ")) s.f = +c.slice(2);
       else if (c.startsWith("m ")) s.mode = presetOf(c.slice(2), s.f);
       else if (c === "schumann") { s.f = 7.83; s.mode = "schumann"; }
+      else if (c.startsWith("led ")) s.led = c === "led on";
     },
     tick() {
       const s = this.st;
@@ -294,6 +309,14 @@ document.querySelectorAll(".seg button").forEach((b) => b.onclick = () => {
 });
 
 // ---- kontroller
+// ---- durum LED'i (firmware: led on | led off); tercih telefonda saklanır
+try { $("ledSw").checked = localStorage.getItem("torus_led") !== "0"; } catch {}
+async function sendLed() { await send($("ledSw").checked ? "led on" : "led off"); }
+$("ledSw").onchange = () => {
+  try { localStorage.setItem("torus_led", $("ledSw").checked ? "1" : "0"); } catch {}
+  sendLed();
+};
+
 $("btnOn").onclick = async () => { await send(`a ${$("amp").value}`); await send(`t ${minutes}`); await sendMode(); await send("on"); readStatus(); };
 $("btnOff").onclick = async () => { await send("off"); readStatus(); };
 $("amp").oninput = () => {

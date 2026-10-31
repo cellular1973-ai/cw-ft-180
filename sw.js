@@ -1,5 +1,5 @@
 // Torus Kolye - cevrimdisi onbellek. Uygulama tek dosya; surum degisince CACHE adini artirin.
-const CACHE = "torus-kolye-v2";
+const CACHE = "torus-kolye-v3";
 const FILES = [
   "./torus_kolye.html",
   "./manifest.webmanifest",
