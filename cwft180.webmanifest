@@ -1,0 +1,17 @@
+{
+  "name": "CW-FT-180",
+  "short_name": "CW-FT-180",
+  "description": "CW-FT-180 çift telli toroid bobin kaidesini Bluetooth ile kontrol eder.",
+  "lang": "tr",
+  "start_url": "./cwft180.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#14171a",
+  "theme_color": "#14171a",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

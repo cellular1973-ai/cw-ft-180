@@ -1,8 +1,10 @@
-// Torus Kolye - cevrimdisi onbellek. Uygulama tek dosya; surum degisince CACHE adini artirin.
-const CACHE = "torus-kolye-v4";
+// Torus Kolye + CW-FT-180 - cevrimdisi onbellek. Her uygulama tek dosya; surum degisince CACHE adini artirin.
+const CACHE = "torus-kolye-v5";
 const FILES = [
   "./torus_kolye.html",
   "./manifest.webmanifest",
+  "./cwft180.html",
+  "./cwft180.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/apple-touch-icon.png",
