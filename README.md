@@ -1,42 +1,72 @@
-# CW-FT-180 Torus PEMF & Skaler Alan Kontrol Sistemi
+# CW-FT-180 · Ters Sarımlı Çift Telli Tam Toroid
 
-🌐 **Canlı Web Uygulaması (GitHub Pages):** [https://cellular1973-ai.github.io/cw-ft-180/](https://cellular1973-ai.github.io/cw-ft-180/)  
-*(veya alternatif doğrudan link: [https://cellular1973-ai.github.io/cw-ft-180/cw_ft_180.html](https://cellular1973-ai.github.io/cw-ft-180/cw_ft_180.html))*
+**Uygulama:** https://cellular1973-ai.github.io/cw-ft-180/cw_ft_180.html
+(kök adres ve `cwft180.html` aynı sayfayı açar)
 
-Bu proje, **CW-FT-180** (180 mm dış çap, 83 mm yükseklik, Ters Sarımlı Çift Telli Tam Toroid) bobinini profesyonel bir masaüstü PEMF ve Skaler Enerji cihazına dönüştürmek için geliştirilmiş Web BLE kontrol paneli, gömülü yazılımı (ESP32) ve donanım tasarımını içerir.
+CW-FT-180, iki ayrı telle ters yönlerde sarılmış Ø180 mm'lik bir tam toroid bobindir. Sürücü kartı bobinin oturduğu siyah kaidenin içindedir. Telefon veya bilgisayardan Web Bluetooth ile kontrol edilir.
 
----
+> Tıbbi cihaz değildir; herhangi bir hastalığın tanı veya tedavisi için tasarlanmamıştır. Kalp pili, defibrilatör veya başka bir aktif implant taşıyanlar kullanmamalıdır.
 
-## 🚀 Öne Çıkan Özellikler
+## Bobin
 
-1. **Genişletilmiş Web Bluetooth Kontrol Paneli (`index.html` / `cw_ft_180.html`):**
-   - **Modern 2 Sütunlu Responsive Arayüz:** Masaüstü ve tabletler için ferah ve detaylı göstergeler ("daha geniş alan").
-   - **3B Dinamik Canvas Simülatörü:** CW-FT-180 torusunun 11x12 çift ters sarımını ve çalışma frekansıyla eşzamanlı atan manyetik/skaler akı çizgilerini canlı çizer.
-   - **CST Studio Simülasyon Kalibrasyonu:**
-     - Bobin direnci: `218 mΩ`, Endüktans: `29 µH`
-     - Merkez manyetik akı: `199 µT / A` (tepe)
-     - Dipol momenti: `0.25 A·m² / A` (Küçük kolyeden 12.5 kat daha güçlü)
-     - 1 Metre uzak alan: `0.051 µT / A` (Küçük kolyeden 13 kat daha güçlü)
-   - **Mesafe Bazlı B Alanı Hesaplayıcı:** Kullanıcının seçtiği mesafede (0 cm, 5 cm, 10 cm, 25 cm, 50 cm, 100 cm) manyetik alan zayıflamasını anlık gösterir.
-   - **Topoloji Seçimi:**
-     - *B-Dipol Modu:* Manyetik odaklı maksimum alan (Standart PEMF).
-     - *Skaler Mod:* Manyetik dipol söndürme ($B \approx 0$), sıfır-noktası skaler enerji vorteksi.
-   - **Gelişmiş Frekans Protokolleri:**
-     - 100 Hz Klasik PEMF Sinüs
-     - 100 Hz Darbe (%25 duty, 0.1 ms kenar ile 16 kat yüksek dB/dt)
-     - 7.83 Hz Schumann Rezonansı
-     - 40 Hz Gamma Beyin Dalgası
-     - 432 Hz Doğal Harmonik
-     - 528 Hz Solfeggio / DNA Onarım Frekansı
-   - **Canlı Telemetri:** Ölçülen akım, gerilim, güç dağılımı (W/mW), dB/dt (T/s), doku E alanı (µV/m), sıcaklık ve seans geri sayımı.
-   - **Dahili Demo Modu:** Donanıma bağlanmadan da tarayıcıda tam test ve simülasyon.
-   - **PWA Desteği:** Masaüstü veya telefona uygulama gibi yüklenebilir, çevrimdışı çalışır.
+| | Değer |
+|---|---|
+| Gövde | Ø180 mm dış, Ø40 mm delik, 83 mm yükseklik, elips kesit |
+| Sargı | 2 tel × (11 toroidal × 12 poloidal), Ø1 mm bakır |
+| Tel A (iç) | 4,94 m · 108 mΩ · 11,2 µH |
+| Tel B (dış, ters yönde) | 5,00 m · 110 mΩ · 11,3 µH |
+| Teller arası ortak endüktans | −3,07 µH |
 
-2. **Gömülü Yazılım (`firmware/cw_ft_180_driver.ino`):**
-   - ESP32-C3 / ESP32-S3 ile tam uyumlu.
-   - 3.0 A tepe akım kapasitesi (DRV8871 güç katı).
-   - BLE GATT servisi, anlık durum yayını ve aşırı akım koruması.
+Değerler Biot-Savart / Neumann hesabındandır (CST benzetimiyle eksende %1 içinde uyumlu). Ölçümle doğrulanmadı.
 
-3. **Donanım & Siyah Kanal Sürücü Tasarımı (`HARDWARE_DESIGN.md`):**
-   - Görseldeki gibi torusun tabanına entegre edilen siyah sürücü muhafazası.
-   - 12V DC harici adaptör beslemesi ve kablo jak girişi.
+## Tel bağlantısı
+
+İki tel ayrı köprülerle sürüldüğü için alanın biçimi yazılımdan seçilir:
+
+| Bağlantı | Akımlar | Merkezde dış alan | Tüp içinde |
+|---|---|---|---|
+| **Ters** | I_B = −I_A | 199 µT/A | — |
+| **Aynı** | I_B = +I_A | ≈ 1 µT/A | ≈ 87 µT/A |
+| **Tek tel** | yalnız A | 99 µT/A | — |
+| **Faz** | B, A'ya göre faz kaymalı | ters ile aynı arası | ters ile aynı arası |
+
+- **Ters** bağlantıda iki telin dipol alanları toplanır; alan bobinin deliğinden ve dışına yayılır (1 m'de 0,05 µT/A).
+- **Aynı** bağlantıda dipol alanları birbirini söndürür, alan tüpün içinde kapalı kalır; bobinin dışında neredeyse alan yoktur.
+
+## Uygulama (`cw_ft_180.html`)
+
+- Bluetooth bağlantısı (cihaz adı `CWFT180`), Demo modu (cihazsız deneme)
+- Tel bağlantısı: ters / aynı / tek tel / faz (0–355°)
+- Sinyal: sinüs, darbe (%10–50 doluluk), 7,83 Hz dar darbe; frekans 1–200 Hz
+- Şiddet: tel başına 100–1500 mA tepe
+- Oturum: 10 / 20 / 30 / 60 dk veya en fazla 12 adımlı program (hazır 3 program + kendi adımlarınız)
+- Durum: tel A ve B akımı, köprü gerilimleri, USB gerilimi, kalan süre, tahmini merkez ve tüp içi alan, dB/dt
+- Telefona kurulabilir (PWA), çevrimdışı açılır
+
+Web Bluetooth: Android'de Chrome, iPhone'da Bluefy tarayıcısı; sayfa HTTPS üzerinden açılmalıdır.
+
+## Firmware (`firmware/cwft180_surucu/`)
+
+ESP32-C3 SuperMini, Arduino-ESP32 core 3.x. Taslaktır, donanımda henüz denenmedi.
+
+```bash
+arduino-cli compile -b "esp32:esp32:esp32c3:CDCOnBoot=cdc,PartitionScheme=huge_app" --upload -p COMx firmware/cwft180_surucu
+```
+
+Komutlar (seri port 115200 ve Bluetooth aynı):
+
+```
+on | off | a <mA> | t <dakika> | f <Hz> | m sinus | m darbe | d <yüzde> | w <us>
+schumann | bag ters|ayni|tek|faz | faz <derece> | led on|off | s | cal
+p <f>/<s|dNN|wNNN>/<dk>,...     örnek: p 7.83/w500/5,10/s/10,100/d25/5
+```
+
+Bluetooth servisi `7a1c0101-5b4e-4f6a-9c1d-2e3f4a5b6c7d` (komut `…0102`, durum `…0103`).
+
+## Donanım
+
+Kaide kartı ve muhafaza: [HARDWARE_DESIGN.md](HARDWARE_DESIGN.md)
+
+## Depodaki diğer dosyalar
+
+`torus_kolye.html` ve `manifest.webmanifest` küçük torus kolyenin (CW-FT-50) uygulamasıdır; asıl adresi https://cellular1973-ai.github.io/torus-kolye/.

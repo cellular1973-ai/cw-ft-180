@@ -1,4 +1,4 @@
-firmware/build/
+firmware/**/build/
 *.bin
 *.elf
 *.map
