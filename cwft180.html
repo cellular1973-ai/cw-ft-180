@@ -7,8 +7,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="cwft180.webmanifest">
-<link rel="icon" href="icons/icon-192.png">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/cwft180/icon-192.png">
+<link rel="apple-touch-icon" href="icons/cwft180/apple-touch-icon.png">
 <title>CW-FT-180</title>
 <style>
 /* torus_kolye.html ile ayni dil; genis ekranda iki sutun */
@@ -28,8 +28,10 @@ main { max-width: 460px; margin: 0 auto; display: grid; gap: 14px; }
 .col { display: grid; gap: 14px; align-content: start; }
 @media (min-width: 900px) { main { max-width: 940px; grid-template-columns: 1fr 1fr; } header, .wide { grid-column: 1 / -1; } }
 header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-h1 { font-size: 20px; margin: 0; letter-spacing: .01em; }
+h1 { font-size: 22px; margin: 0; letter-spacing: .08em; }
 h1 small { display: block; font-size: 12px; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+.brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+#logo { width: 56px; height: 56px; flex: none; }
 h2 { font-size: 15px; margin: 0; }
 .conn { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
 .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); }
@@ -95,7 +97,10 @@ dialog ul { padding-left: 18px; margin: 0 0 14px; font-size: 15px; }
 <body>
 <main>
   <header>
-    <h1>CW-FT-180<small>Ters Sarımlı Çift Telli Tam Toroid</small></h1>
+    <div class="brand">
+      <canvas id="logo" width="168" height="168" aria-hidden="true"></canvas>
+      <h1>CW FT 180<small>Ters Sarımlı Çift Telli Tam Toroid</small></h1>
+    </div>
     <div class="conn"><span class="dot" id="dot"></span><span id="connTxt">Bağlı değil</span></div>
   </header>
 
@@ -316,6 +321,7 @@ function render(s) {
   st.curStep = s.on ? s.step : 0; renderSteps();
   if (typeof s.led === "boolean" && Date.now() - ledTouched > 3000) $("ledSw").checked = s.led;
   drawFig(s.bag, s.faz, s.on);
+  logo.active = s.on;
   $("fault").hidden = !s.fault || s.fault === "yok";
   $("fault").textContent = `Cihaz durdu: ${s.fault}. Sorunu giderip yeniden başlatın.`;
   $("btnOn").disabled = s.on; $("btnOff").disabled = !s.on;
@@ -479,6 +485,59 @@ for (const p of PROGS) {
   $("progs").appendChild(b);
 }
 try { st.steps = JSON.parse(localStorage.getItem("cwft_prog") || "[]"); } catch {}
+// ---- logo: CW-FT-180'in kendisi; iki tel (11 x 12 torus düğümü, ters yönlerde), cihaz çalışırken hızlı döner
+const logo = (() => {
+  const cv = $("logo"), ctx = cv.getContext("2d"), W = cv.width;
+  const RM = 55, A = 35, B = 41.5, P = 11, Q = 12, N = Q * 40, TILT = 0.9;   // ikon_cwft180.py ile aynı
+  const wires = [0, 1].map((k) => Array.from({ length: N + 1 }, (_, i) => {
+    const t = 2 * Math.PI * Q * i / N, off = k ? 3 : 1, r = RM + (A + off) * Math.cos(t), ph = (k ? -1 : 1) * P * t / Q;
+    return [r * Math.cos(ph), r * Math.sin(ph), (B + off) * Math.sin(t)];
+  }));
+  const sc = W * 0.47 / (RM + A + 3), cx = W / 2, cy = W / 2;
+  const me = { active: false };
+  let ang = 0.6, last = 0, col = null, tick = 0;
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const proj = ([x, y, z]) => {
+    const x1 = x * Math.cos(ang) - y * Math.sin(ang), y1 = x * Math.sin(ang) + y * Math.cos(ang);
+    return [cx + sc * x1, cy + sc * (y1 * Math.cos(TILT) - z * Math.sin(TILT)), y1 * Math.sin(TILT) + z * Math.cos(TILT)];
+  };
+  function draw() {
+    if (!col || tick++ % 60 === 0) {
+      const cs = getComputedStyle(document.documentElement);
+      col = { a: cs.getPropertyValue("--copper").trim(), b: cs.getPropertyValue("--wireB").trim(), body: cs.getPropertyValue("--muted").trim() };
+    }
+    ctx.clearRect(0, 0, W, W);
+    ctx.fillStyle = col.body; ctx.globalAlpha = 0.05;          // gövde: halka boyunca yarı saydam kesitler
+    for (let j = 0; j < 72; j++) {
+      const u = 2 * Math.PI * j / 72, [X, Y] = proj([RM * Math.cos(u), RM * Math.sin(u), 0]);
+      ctx.beginPath(); ctx.arc(X, Y, A * sc, 0, 2 * Math.PI); ctx.fill();
+    }
+    const segs = [];
+    wires.forEach((w, k) => {
+      let p = proj(w[0]);
+      for (let i = 1; i < w.length; i++) { const q = proj(w[i]); segs.push([p, q, (p[2] + q[2]) / 2, k]); p = q; }
+    });
+    segs.sort((s1, s2) => s1[2] - s2[2]);                       // arkadan öne
+    const zr = (RM + A) * 1.05;
+    ctx.lineWidth = W / 90; ctx.lineCap = "round";
+    for (const [p, q, z, k] of segs) {
+      ctx.globalAlpha = 0.18 + 0.82 * Math.min(1, Math.max(0, (z + zr) / (2 * zr)));
+      ctx.strokeStyle = k ? col.b : col.a;
+      ctx.beginPath(); ctx.moveTo(p[0], p[1]); ctx.lineTo(q[0], q[1]); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  }
+  function frame(ts) {
+    const dt = last ? Math.min(0.1, (ts - last) / 1000) : 0; last = ts;
+    if (!reduce) ang += dt * (me.active ? 1.6 : 0.3);
+    draw();
+    requestAnimationFrame(frame);
+  }
+  draw();
+  if (!reduce) requestAnimationFrame(frame);
+  return me;
+})();
+
 syncUI(); renderSteps();
 </script>
 </body>

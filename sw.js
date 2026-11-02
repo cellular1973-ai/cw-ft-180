@@ -1,13 +1,13 @@
-// Torus Kolye + CW-FT-180 - cevrimdisi onbellek. Her uygulama tek dosya; surum degisince CACHE adini artirin.
-const CACHE = "torus-kolye-v5";
+// CW-FT-180 - cevrimdisi onbellek. Uygulama tek dosya; surum degisince CACHE adini artirin.
+const CACHE = "cw-ft-180-v1";
 const FILES = [
-  "./torus_kolye.html",
-  "./manifest.webmanifest",
+  "./cw_ft_180.html",
+  "./index.html",
   "./cwft180.html",
   "./cwft180.webmanifest",
-  "./icons/icon-192.png",
-  "./icons/icon-512.png",
-  "./icons/apple-touch-icon.png",
+  "./icons/cwft180/icon-192.png",
+  "./icons/cwft180/icon-512.png",
+  "./icons/cwft180/apple-touch-icon.png",
 ];
 
 self.addEventListener("install", (e) => {
