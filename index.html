@@ -238,15 +238,18 @@ const BAG = {
   faz:  { ad: "Faz", hint: "B teli faz kaymalı sürülür: 0° ters, 180° aynı bağlantı. Darbede B darbesi gecikir (180° = sıralı)." },
 };
 // frekans kaydirici: 0..100 -> 1..200 Hz (logaritmik), sik kullanilanlara yapisir
-const SNAP = [1, 2, 3, 5, 7.83, 10, 12, 15, 20, 25, 30, 40, 50, 60, 75, 100, 120, 150, 200];
+const SNAP = [1, 2, 3, 5, 7.83, 10, 12, 14.3, 15, 20, 20.8, 25, 30, 40, 50, 60, 75, 100, 120, 150, 200];
 const sliderToF = (v) => { const f = Math.pow(200, v / 100); return SNAP.reduce((a, b) => Math.abs(Math.log(b / f)) < Math.abs(Math.log(a / f)) ? b : a); };
 const fToSlider = (f) => Math.round(100 * Math.log(f) / Math.log(200));
 const fmtHz = (f) => `${String(f).replace(".", ",")} Hz`;
 const PROGS = [
+  { ad: "Derin Uyku & Gevşeme", txt: "10 Hz sinüs 5 dk → 7,83 Hz dar darbe 10 dk → 3 Hz sinüs 10 dk (25 dk)", steps: [[10, "s", 5], [7.83, "w500", 10], [3, "s", 10]] },
+  { ad: "40 Hz Gamma Odaklanma", txt: "7,83 Hz sinüs 5 dk → 15 Hz sinüs 5 dk → 40 Hz darbe %25 10 dk (20 dk)", steps: [[7.83, "s", 5], [15, "s", 5], [40, "d25", 10]] },
+  { ad: "Schumann Harmonikleri", txt: "7,83 Hz dar darbe 8 dk → 14,3 Hz sinüs 6 dk → 20,8 Hz sinüs 6 dk (20 dk)", steps: [[7.83, "w500", 8], [14.3, "s", 6], [20.8, "s", 6]] },
+  { ad: "Yoğun Hücresel PEMF", txt: "10 Hz darbe %25 10 dk → 100 Hz darbe %25 15 dk → 7,83 Hz sinüs 5 dk (30 dk)", steps: [[10, "d25", 10], [100, "d25", 15], [7.83, "s", 5]] },
   { ad: "Düşük frekans", txt: "7,83 Hz darbe 10 dk → 3 Hz sinüs 10 dk", steps: [[7.83, "w500", 10], [3, "s", 10]] },
   { ad: "Karma", txt: "10 Hz sinüs 5 dk → 50 Hz darbe 10 dk → 7,83 Hz darbe 5 dk", steps: [[10, "s", 5], [50, "d25", 10], [7.83, "w500", 5]] },
-  { ad: "Klasik", txt: "100 Hz darbe %25, 20 dk", steps: [[100, "d25", 20]] },
-];
+  { ad: "Klasik", txt: "100 Hz darbe %25, 20 dk", steps: [[100, "d25", 20]] },];
 const $ = (id) => document.getElementById(id);
 const st = { bag: "ters", faz: 90, mode: "sinus", f: 100, duty: 25, minutes: 20, steps: [], curStep: 0 };
 let cmdCh = null, staCh = null, demo = null, pollTimer = null, ledTouched = 0, uiTouched = 0;

@@ -1,5 +1,5 @@
 // CW-FT-180 - cevrimdisi onbellek. Uygulama tek dosya; surum degisince CACHE adini artirin.
-const CACHE = "cw-ft-180-v1";
+const CACHE = "cw-ft-180-v2";
 const FILES = [
   "./cw_ft_180.html",
   "./index.html",
